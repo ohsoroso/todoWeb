@@ -3,25 +3,18 @@ package com.web.todoweb.entity;
 import jakarta.persistence.*;
 
 @Entity
+@Table(name = "task")
 public class Task {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String description;
-    private boolean done;
+    private Boolean done;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "todo_list_id")
     private TodoList todoList;
-
-    public Task() {
-    }
-
-    public Task(String description, boolean done) {
-        this.description = description;
-        this.done = done;
-    }
 
     // Getters and Setters
     public Long getId() {
@@ -40,11 +33,11 @@ public class Task {
         this.description = description;
     }
 
-    public boolean isDone() {
+    public Boolean getDone() {
         return done;
     }
 
-    public void setDone(boolean done) {
+    public void setDone(Boolean done) {
         this.done = done;
     }
 
@@ -54,15 +47,5 @@ public class Task {
 
     public void setTodoList(TodoList todoList) {
         this.todoList = todoList;
-    }
-
-    // toString
-    @Override
-    public String toString() {
-        return "Task{" +
-                "id=" + id +
-                ", description='" + description + '\'' +
-                ", done=" + done +
-                '}';
     }
 }

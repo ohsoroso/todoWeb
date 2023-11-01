@@ -1,35 +1,61 @@
 package com.web.todoweb.servlet;
 
-import com.web.todoweb.dao.TodoListDao;
+import com.web.todoweb.dao.TodoListDAO;
 import com.web.todoweb.entity.TodoList;
-import jakarta.servlet.ServletException;
+import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.*;
+import jakarta.persistence.*;
 
 import java.io.IOException;
+import java.util.List;
 
-@WebServlet("/todolist")
+@WebServlet("/todo")
 public class TodoListServlet extends HttpServlet {
 
-    private final TodoListDao todoListDao = new TodoListDao();
+    private EntityManagerFactory entityManagerFactory;
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        req.getRequestDispatcher("create_todo_list.jsp").forward(req, resp);
+    public void init() throws ServletException {
+        // Manually creating EntityManagerFactory
+        entityManagerFactory = Persistence.createEntityManagerFactory("default");
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String name = req.getParameter("name");
-        if (name != null && !name.trim().isEmpty()) {
-            TodoList todoList = new TodoList(name);
-            todoListDao.createTodoList(todoList);
-            resp.sendRedirect("task?todoListId=" + todoList.getId());
-        } else {
-            // Log or handle the error
-            System.err.println("Name parameter is null or empty");
+    public void destroy() {
+        // Close EntityManagerFactory when the application is stopped
+        entityManagerFactory.close();
+    }
+
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        try {
+            TodoListDAO todoListDAO = new TodoListDAO(entityManager);
+            List<TodoList> todoLists = todoListDAO.getAllTodoLists();
+            request.setAttribute("todoLists", todoLists);
+            RequestDispatcher dispatcher = request.getRequestDispatcher("index.jsp");
+            dispatcher.forward(request, response);
+        } finally {
+            entityManager.close();
         }
     }
+
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        try {
+            String name = request.getParameter("name");
+            TodoList newTodoList = new TodoList();
+            newTodoList.setName(name);
+
+            TodoListDAO todoListDAO = new TodoListDAO(entityManager);
+            todoListDAO.createTodoList(newTodoList);
+
+            response.sendRedirect("todo");
+        } finally {
+            entityManager.close();
+        }
+    }
+    // Additional CRUD operations
 }

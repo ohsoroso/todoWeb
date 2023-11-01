@@ -2,9 +2,9 @@ package com.web.todoweb.entity;
 
 import jakarta.persistence.*;
 import java.util.List;
-import java.util.ArrayList;
 
 @Entity
+@Table(name = "todo_list")
 public class TodoList {
 
     @Id
@@ -12,15 +12,8 @@ public class TodoList {
     private Long id;
     private String name;
 
-    @OneToMany(mappedBy = "todoList", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Task> tasks = new ArrayList<>();
-
-    public TodoList() {
-    }
-
-    public TodoList(String name) {
-        this.name = name;
-    }
+    @OneToMany(mappedBy = "todoList")
+    private List<Task> tasks;
 
     // Getters and Setters
     public Long getId() {
@@ -45,15 +38,5 @@ public class TodoList {
 
     public void setTasks(List<Task> tasks) {
         this.tasks = tasks;
-    }
-
-    // toString
-    @Override
-    public String toString() {
-        return "TodoList{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", tasks=" + tasks +
-                '}';
     }
 }
